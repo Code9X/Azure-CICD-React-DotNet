@@ -51,13 +51,13 @@ jobs:
 
       # Step 9: Upload build artifacts
       - name: Upload .NET build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dotnet-build
           path: BookingWiz_Web/bin/Release/net6.0/publish/  # Adjust path as needed
 
       - name: Upload React build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: react-build
           path: BookingWiz_Admin/build/
