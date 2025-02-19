@@ -18,18 +18,18 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'  # Replace with your .NET version
+          dotnet-version: '8.0.x'  # Updated to .NET 8.0 SDK
 
       # Step 3: Restore .NET dependencies and run tests for the backend
       - name: Restore .NET dependencies
-        run: dotnet restore BookingWiz_Admin/BookingWiz_Admin.csproj  # Corrected path
+        run: dotnet restore BookingWiz_Admin/BookingWiz_Admin.csproj
 
       - name: Run .NET tests
-        run: dotnet test BookingWiz_Admin/BookingWiz_Admin.csproj --no-restore  # Corrected path
+        run: dotnet test BookingWiz_Admin/BookingWiz_Admin.csproj --no-restore
 
       # Step 4: Build .NET backend project
       - name: Build .NET project
-        run: dotnet build BookingWiz_Admin/BookingWiz_Admin.csproj --configuration Release --no-restore  # Corrected path
+        run: dotnet build BookingWiz_Admin/BookingWiz_Admin.csproj --configuration Release --no-restore
 
       # Step 5: Set up Node.js environment for the React frontend
       - name: Set up Node.js
@@ -39,28 +39,28 @@ jobs:
 
       # Step 6: Install React dependencies for the frontend
       - name: Install React dependencies
-        run: npm install --prefix BookingWiz_Web  # Corrected path
+        run: npm install --prefix BookingWiz_Web
 
       # Step 7: Run React tests (if you have tests)
       - name: Run React tests
-        run: npm test --prefix BookingWiz_Web  # Corrected path
+        run: npm test --prefix BookingWiz_Web
 
       # Step 8: Build React frontend app
       - name: Build React app
-        run: npm run build --prefix BookingWiz_Web  # Corrected path
+        run: npm run build --prefix BookingWiz_Web
 
       # Step 9: Upload build artifacts
       - name: Upload .NET build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dotnet-build
-          path: BookingWiz_Admin/bin/Release/net6.0/publish/  # Corrected path
+          path: BookingWiz_Admin/bin/Release/net8.0/publish/  # Updated to net8.0
 
       - name: Upload React build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: react-build
-          path: BookingWiz_Web/build/  # Corrected path
+          path: BookingWiz_Web/build/
 
       # Step 10: Trigger Jenkins (optional)
       - name: Trigger Jenkins
