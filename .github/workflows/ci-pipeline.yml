@@ -1,0 +1,69 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up .NET environment for the backend
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'  # Replace with your .NET version
+
+      # Step 3: Restore .NET dependencies and run tests for the backend
+      - name: Restore .NET dependencies
+        run: dotnet restore BookingWiz_Web/BookingWiz_Web.csproj
+
+      - name: Run .NET tests
+        run: dotnet test BookingWiz_Web/BookingWiz_Web.csproj --no-restore
+
+      # Step 4: Build .NET backend project
+      - name: Build .NET project
+        run: dotnet build BookingWiz_Web/BookingWiz_Web.csproj --configuration Release --no-restore
+
+      # Step 5: Set up Node.js environment for the React frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'  # Replace with your Node.js version
+
+      # Step 6: Install React dependencies for the frontend
+      - name: Install React dependencies
+        run: npm install --prefix BookingWiz_Admin
+
+      # Step 7: Run React tests (if you have tests)
+      - name: Run React tests
+        run: npm test --prefix BookingWiz_Admin
+
+      # Step 8: Build React frontend app
+      - name: Build React app
+        run: npm run build --prefix BookingWiz_Admin
+
+      # Step 9: Upload build artifacts
+      - name: Upload .NET build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-build
+          path: BookingWiz_Web/bin/Release/net6.0/publish/  # Adjust path as needed
+
+      - name: Upload React build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: react-build
+          path: BookingWiz_Admin/build/
+
+      # Step 10: Trigger Jenkins (optional)
+      - name: Trigger Jenkins
+        run: |
+          echo "Triggering Jenkins pipeline..."
+          # Add a curl command or Jenkins webhook trigger here if needed
