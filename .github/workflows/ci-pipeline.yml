@@ -22,14 +22,14 @@ jobs:
 
       # Step 3: Restore .NET dependencies and run tests for the backend
       - name: Restore .NET dependencies
-        run: dotnet restore BookingWiz_Web/BookingWiz_Web.csproj
+        run: dotnet restore BookingWiz_Admin/BookingWiz_Admin.csproj  # Corrected path
 
       - name: Run .NET tests
-        run: dotnet test BookingWiz_Web/BookingWiz_Web.csproj --no-restore
+        run: dotnet test BookingWiz_Admin/BookingWiz_Admin.csproj --no-restore  # Corrected path
 
       # Step 4: Build .NET backend project
       - name: Build .NET project
-        run: dotnet build BookingWiz_Web/BookingWiz_Web.csproj --configuration Release --no-restore
+        run: dotnet build BookingWiz_Admin/BookingWiz_Admin.csproj --configuration Release --no-restore  # Corrected path
 
       # Step 5: Set up Node.js environment for the React frontend
       - name: Set up Node.js
@@ -39,28 +39,28 @@ jobs:
 
       # Step 6: Install React dependencies for the frontend
       - name: Install React dependencies
-        run: npm install --prefix BookingWiz_Admin
+        run: npm install --prefix BookingWiz_Web  # Corrected path
 
       # Step 7: Run React tests (if you have tests)
       - name: Run React tests
-        run: npm test --prefix BookingWiz_Admin
+        run: npm test --prefix BookingWiz_Web  # Corrected path
 
       # Step 8: Build React frontend app
       - name: Build React app
-        run: npm run build --prefix BookingWiz_Admin
+        run: npm run build --prefix BookingWiz_Web  # Corrected path
 
       # Step 9: Upload build artifacts
       - name: Upload .NET build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dotnet-build
-          path: BookingWiz_Web/bin/Release/net6.0/publish/  # Adjust path as needed
+          path: BookingWiz_Admin/bin/Release/net6.0/publish/  # Corrected path
 
       - name: Upload React build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: react-build
-          path: BookingWiz_Admin/build/
+          path: BookingWiz_Web/build/  # Corrected path
 
       # Step 10: Trigger Jenkins (optional)
       - name: Trigger Jenkins
