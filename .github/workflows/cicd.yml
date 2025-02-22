@@ -61,3 +61,20 @@ jobs:
         run: |
           docker build -t bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
           docker push bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
+
+      # Set AKS context
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: myResourceGroup
+          cluster-name: bookingwizaks
+          kubeconfig: ${{ secrets.AKS_KUBECONFIG }}
+
+      # Deploy to staging
+      - name: Deploy to Staging
+        run: |
+          kubectl apply -f k8s/staging-frontend.yaml -n staging
+          kubectl apply -f k8s/staging-backend.yaml -n staging
+          sleep 30  # Wait for pods to start
+          kubectl rollout status deployment/bookingwiz-web -n staging
+          kubectl rollout status deployment/bookingwiz-admin -n staging
