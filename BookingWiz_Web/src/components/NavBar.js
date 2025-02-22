@@ -17,9 +17,9 @@ const NavBar = () => {
           ☰
         </div>
         <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
-          <Link to="/hotels" className="navbar-item" onClick={() => setMenuOpen(false)}>Hotels</Link>
-          <Link to="/flights" className="navbar-item" onClick={() => setMenuOpen(false)}>Flights</Link>
-          <Link to="/test" className="navbar-item" onClick={() => setMenuOpen(false)}>Reservation</Link>
+          <Link to="/Hotels" className="navbar-item" onClick={() => setMenuOpen(false)}>Hotels</Link>
+          <Link to="/Flights" className="navbar-item" onClick={() => setMenuOpen(false)}>Flights</Link>
+          <Link to="/Reservation" className="navbar-item" onClick={() => setMenuOpen(false)}>Reservation</Link>
           <div className="navbar-account">A</div>
         </div>
       </div>
