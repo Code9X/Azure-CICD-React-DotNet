@@ -52,12 +52,12 @@ jobs:
       - name: Build and Push Frontend Docker Image
         working-directory: ./BookingWiz_Web
         run: |
-          docker build -t myacr.azurecr.io/bookingwiz-web:${{ github.sha }} .
-          docker push myacr.azurecr.io/bookingwiz-web:${{ github.sha }}
+          docker build -t bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }} .
+          docker push bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}
 
       # Build and push Docker image for backend
       - name: Build and Push Backend Docker Image
         working-directory: ./BookingWiz_Admin
         run: |
-          docker build -t myacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
-          docker push myacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
+          docker build -t bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
+          docker push bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
