@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Setup Node.js for React frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Install and build BookingWiz_Web (React)
+      - name: Build Frontend
+        working-directory: ./BookingWiz_Web
+        run: |
+          npm install
+          npm install react-router-dom  # Fix missing dependency
+          CI=false npm run build  # Bypass ESLint warnings
+
+      # Setup .NET SDK for backend
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      # Build BookingWiz_Admin (.NET)
+      - name: Build Backend
+        working-directory: ./BookingWiz_Admin
+        run: |
+          dotnet restore
+          dotnet build --configuration Release
+
+      # Login to Azure Container Registry
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: myacr.azurecr.io  # Replace with your ACR name
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Build and push Docker image for frontend
+      - name: Build and Push Frontend Docker Image
+        working-directory: ./BookingWiz_Web
+        run: |
+          docker build -t myacr.azurecr.io/bookingwiz-web:${{ github.sha }} .
+          docker push myacr.azurecr.io/bookingwiz-web:${{ github.sha }}
+
+      # Build and push Docker image for backend
+      - name: Build and Push Backend Docker Image
+        working-directory: ./BookingWiz_Admin
+        run: |
+          docker build -t myacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
+          docker push myacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
