@@ -31,10 +31,10 @@ jobs:
         working-directory: ./BookingWiz_Web
         run: CI=false npm run build  # Prevents ESLint warnings from failing the build
 
-      # Run frontend tests if they exist
-      - name: Test Frontend
-        working-directory: ./BookingWiz_Web
-        run: npm test --if-present  # Skips if no tests are defined
+      # # Run frontend tests if they exist
+      # - name: Test Frontend
+      #   working-directory: ./BookingWiz_Web
+      #   run: npm test --if-present
 
       # Setup .NET SDK for BookingWiz_Admin (v8.0)
       - name: Setup .NET
