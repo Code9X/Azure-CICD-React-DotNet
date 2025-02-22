@@ -13,28 +13,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Setup Node.js for React (v18 for React 18.3.1)
+      # Setup Node.js environment for React frontend (v18 for React 18.3.1)
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Install dependencies for React frontend
+      # Install dependencies for BookingWiz_Web (React frontend)
       - name: Install Frontend Dependencies
         working-directory: ./BookingWiz_Web
         run: npm install
 
-      # Build React frontend, overriding CI=true to bypass ESLint errors temporarily
+      # Build BookingWiz_Web, bypassing ESLint warnings in CI
       - name: Build Frontend
         working-directory: ./BookingWiz_Web
-        run: CI=false npm run build
+        run: CI=false npm run build  # Prevents ESLint warnings from failing the build
 
-      # Run frontend tests (skip if no tests exist)
+      # Run frontend tests if they exist
       - name: Test Frontend
         working-directory: ./BookingWiz_Web
-        run: npm test --if-present
+        run: npm test --if-present  # Skips if no tests are defined
 
-      # Setup .NET SDK for backend (v8.0 for .NET 8.0)
+      # Setup .NET SDK for BookingWiz_Admin (v8.0)
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -45,16 +45,13 @@ jobs:
         working-directory: ./BookingWiz_Admin
         run: dotnet restore
 
-      # Build .NET backend in Release configuration
+      # Build BookingWiz_Admin in Release configuration
       - name: Build Backend
         working-directory: ./BookingWiz_Admin
         run: dotnet build --configuration Release
 
-      # Run backend tests (skip if no tests exist)
+      # Run backend tests, proceeding even if no tests exist
       - name: Test Backend
         working-directory: ./BookingWiz_Admin
         run: dotnet test --no-restore --verbosity normal
-          continue-on-error:true  # Optional: Allows pipeline to proceed if tests are missing
-
-
-          
+        continue-on-error: true  # Allows pipeline to continue if tests fail or are absent
