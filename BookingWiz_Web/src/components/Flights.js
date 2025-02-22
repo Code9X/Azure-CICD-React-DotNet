@@ -19,7 +19,7 @@ const Flights = () => {
             })
             .catch((error) => {
                 setError(error);
-                setLoading(false);
+                setLoading(false); 
             });
     };
 
