@@ -62,13 +62,21 @@ jobs:
           docker build -t bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
           docker push bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
 
-      # Set AKS context
-      - name: Set AKS Context
-        uses: azure/aks-set-context@v3
+      # Login to Azure
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          resource-group: myResourceGroup
-          cluster-name: bookingwizaks
-          kubeconfig: ${{ secrets.AKS_KUBECONFIG }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      # Get AKS Credentials (Fixing the Set Context Issue)
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
+
+      # Ensure the namespace exists before deploying
+      - name: Ensure Staging Namespace Exists
+        run: |
+          kubectl get namespace staging || kubectl create namespace staging
 
       # Deploy to staging
       - name: Deploy to Staging
