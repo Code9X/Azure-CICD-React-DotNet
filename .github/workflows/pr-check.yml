@@ -22,7 +22,9 @@ jobs:
       # Install dependencies for BookingWiz_Web (React frontend)
       - name: Install Frontend Dependencies
         working-directory: ./BookingWiz_Web
-        run: npm install
+        run: |
+          npm install
+          npm install react-router-dom
 
       # Build BookingWiz_Web, bypassing ESLint warnings in CI
       - name: Build Frontend
