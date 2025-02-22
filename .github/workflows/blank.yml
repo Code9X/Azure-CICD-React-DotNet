@@ -1,0 +1,47 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Setup Node.js for React
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    # Build and Test React Frontend
+    - name: Install Frontend Dependencies
+      working-directory: ./BookingWiz_Web
+      run: npm install
+    - name: Build Frontend
+      working-directory: ./BookingWiz_Web
+      run: npm run build
+    - name: Test Frontend
+      working-directory: ./BookingWiz_Web
+      run: npm test --if-present  # Skip if no tests defined
+
+    # Setup .NET for Backend
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    # Build and Test .NET Backend
+    - name: Restore Backend Dependencies
+      working-directory: ./BookingWiz_Admin
+      run: dotnet restore
+    - name: Build Backend
+      working-directory: ./BookingWiz_Admin
+      run: dotnet build --configuration Release
+    - name: Test Backend
+      working-directory: ./BookingWiz_Admin
+      run: dotnet test --no-restore --verbosity normal --if-present
