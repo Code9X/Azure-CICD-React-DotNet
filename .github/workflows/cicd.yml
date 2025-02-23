@@ -104,15 +104,20 @@ jobs:
         run: |
           az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
 
+      - name: Ensure Production Namespace Exists
+        run: |
+          kubectl get namespace production || kubectl create namespace production
+
       - name: Update Production Kubernetes Manifests
         run: |
-          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-web:.*|image: bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}|g" .github/workflows/k8s/production-frontend.yaml
-          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-admin:.*|image: bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}|g" .github/workflows/k8s/production-backend.yaml
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-web:.*|image: bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}|g" .github/workflows/k8s/production-frontend.yaml || true
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-admin:.*|image: bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}|g" .github/workflows/k8s/production-backend.yaml || true
 
       - name: Deploy to Production
         run: |
           set -e
           kubectl apply -f .github/workflows/k8s/production-frontend.yaml -n production
           kubectl apply -f .github/workflows/k8s/production-backend.yaml -n production
+          sleep 10  # Allow some time before checking rollout status
           kubectl rollout status deployment/bookingwiz-web -n production
           kubectl rollout status deployment/bookingwiz-admin -n production
