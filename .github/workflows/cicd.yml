@@ -67,7 +67,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
+
       # Get AKS Credentials
       - name: Get AKS Credentials
         run: |
@@ -85,7 +85,13 @@ jobs:
         run: |
           kubectl get namespace staging || kubectl create namespace staging
 
-      # Deploy to staging 
+      # Update Kubernetes YAMLs with correct image tags
+      - name: Update Kubernetes Manifests
+        run: |
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-web:.*|image: bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}|g" .github/workflows/k8s/staging-frontend.yaml
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-admin:.*|image: bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}|g" .github/workflows/k8s/staging-backend.yaml
+
+      # Deploy to Staging
       - name: Deploy to Staging
         run: |
           set -e  # Exit if any command fails
