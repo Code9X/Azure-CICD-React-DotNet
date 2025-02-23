@@ -78,7 +78,7 @@ jobs:
         run: |
           kubectl get namespace staging || kubectl create namespace staging
 
-      # Deploy to staging
+      # Deploy to staging 
       - name: Deploy to Staging
         run: |
           kubectl apply -f k8s/staging-frontend.yaml -n staging
