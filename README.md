@@ -39,4 +39,19 @@ Open Edit to See!
 │ - bookingwiz-admin (BE) │
 │ - LoadBalancer (FE)     │
 │ - ClusterIP (BE)        │
+└──────┬──────────────────┘
+       │
+       ▼
+┌─────────────────────────────┐
+│ Manual Approval (if needed) │
+│ Deploy to Production        │
+└──────┬──────────────────────┘
+       │
+       ▼
+┌─────────────────────────┐
+│ AKS Production Namespace│
+│ - bookingwiz-web (FE)   │
+│ - bookingwiz-admin (BE) │
+│ - LoadBalancer (FE)     │
+│ - ClusterIP (BE)        │
 └─────────────────────────┘
