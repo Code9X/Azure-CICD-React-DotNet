@@ -68,7 +68,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-      # Get AKS Credentials (Fixing the Set Context Issue)
+      # Get AKS Credentials
       - name: Get AKS Credentials
         run: |
           az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
@@ -81,8 +81,9 @@ jobs:
       # Deploy to staging 
       - name: Deploy to Staging
         run: |
-          kubectl apply -f k8s/staging-frontend.yaml -n staging
-          kubectl apply -f k8s/staging-backend.yaml -n staging
+          set -e  # Exit if any command fails
+          kubectl apply -f .github/workflows/k8s/staging-frontend.yaml -n staging
+          kubectl apply -f .github/workflows/k8s/staging-backend.yaml -n staging
           sleep 30  # Wait for pods to start
           kubectl rollout status deployment/bookingwiz-web -n staging
           kubectl rollout status deployment/bookingwiz-admin -n staging
