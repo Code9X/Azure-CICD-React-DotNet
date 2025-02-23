@@ -73,6 +73,13 @@ jobs:
         run: |
           az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
 
+      # Assign AcrPull role to AKS node pool
+      - name: Assign AcrPull Role to AKS
+        run: |
+          NODE_RESOURCE_GROUP=$(az aks show --resource-group myResourceGroup --name bookingwizaks --query nodeResourceGroup -o tsv)
+          CLIENT_ID=$(az aks show --resource-group myResourceGroup --name bookingwizaks --query "identityProfile.kubeletidentity.clientId" -o tsv)
+          az role assignment create --assignee $CLIENT_ID --scope /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.ContainerRegistry/registries/bookingwizacr --role AcrPull || echo "Role already assigned"
+
       # Ensure the namespace exists before deploying
       - name: Ensure Staging Namespace Exists
         run: |
