@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookingwiz-web
+  namespace: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookingwiz-web
+  template:
+    metadata:
+      labels:
+        app: bookingwiz-web
+    spec:
+      containers:
+        - name: bookingwiz-web
+          image: bookingwizacr.azurecr.io/bookingwiz-web:latest  # Ensure tag is updated in CI/CD
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookingwiz-web-svc
+  namespace: production
+spec:
+  selector:
+    app: bookingwiz-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
