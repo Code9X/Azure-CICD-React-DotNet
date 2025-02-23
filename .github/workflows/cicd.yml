@@ -9,38 +9,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Setup Node.js for React frontend
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Install and build BookingWiz_Web (React)
       - name: Build Frontend
         working-directory: ./BookingWiz_Web
         run: |
           npm install
-          npm install react-router-dom  # Fix missing dependency
-          CI=false npm run build  # Bypass ESLint warnings
+          npm install react-router-dom
+          CI=false npm run build
 
-      # Setup .NET SDK for backend
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-      # Build BookingWiz_Admin (.NET)
       - name: Build Backend
         working-directory: ./BookingWiz_Admin
         run: |
           dotnet restore
           dotnet build --configuration Release
 
-      # Login to Azure Container Registry
       - name: Login to ACR
         uses: azure/docker-login@v1
         with:
@@ -48,55 +42,77 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # Build and push Docker image for frontend
       - name: Build and Push Frontend Docker Image
         working-directory: ./BookingWiz_Web
         run: |
           docker build -t bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }} .
           docker push bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}
 
-      # Build and push Docker image for backend
       - name: Build and Push Backend Docker Image
         working-directory: ./BookingWiz_Admin
         run: |
           docker build -t bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }} .
           docker push bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}
 
-      # Login to Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Get AKS Credentials
       - name: Get AKS Credentials
         run: |
           az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
 
-      # Assign AcrPull role to AKS node pool
+      - name: Ensure Namespaces Exist
+        run: |
+          kubectl get namespace staging || kubectl create namespace staging
+          kubectl get namespace production || kubectl create namespace production
+
       - name: Assign AcrPull Role to AKS
         run: |
           NODE_RESOURCE_GROUP=$(az aks show --resource-group myResourceGroup --name bookingwizaks --query nodeResourceGroup -o tsv)
           CLIENT_ID=$(az aks show --resource-group myResourceGroup --name bookingwizaks --query "identityProfile.kubeletidentity.clientId" -o tsv)
           az role assignment create --assignee $CLIENT_ID --scope /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.ContainerRegistry/registries/bookingwizacr --role AcrPull || echo "Role already assigned"
 
-      # Ensure the namespace exists before deploying
-      - name: Ensure Staging Namespace Exists
-        run: |
-          kubectl get namespace staging || kubectl create namespace staging
-
-      # Update Kubernetes YAMLs with correct image tags
-      - name: Update Kubernetes Manifests
+      - name: Update Staging Kubernetes Manifests
         run: |
           sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-web:.*|image: bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}|g" .github/workflows/k8s/staging-frontend.yaml
           sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-admin:.*|image: bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}|g" .github/workflows/k8s/staging-backend.yaml
 
-      # Deploy to Staging
       - name: Deploy to Staging
         run: |
-          set -e  # Exit if any command fails
+          set -e
           kubectl apply -f .github/workflows/k8s/staging-frontend.yaml -n staging
           kubectl apply -f .github/workflows/k8s/staging-backend.yaml -n staging
-          sleep 30  # Wait for pods to start
           kubectl rollout status deployment/bookingwiz-web -n staging
           kubectl rollout status deployment/bookingwiz-admin -n staging
+
+  deploy-to-production:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials --resource-group myResourceGroup --name bookingwizaks --overwrite-existing
+
+      - name: Update Production Kubernetes Manifests
+        run: |
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-web:.*|image: bookingwizacr.azurecr.io/bookingwiz-web:${{ github.sha }}|g" .github/workflows/k8s/production-frontend.yaml
+          sed -i "s|image: bookingwizacr.azurecr.io/bookingwiz-admin:.*|image: bookingwizacr.azurecr.io/bookingwiz-admin:${{ github.sha }}|g" .github/workflows/k8s/production-backend.yaml
+
+      - name: Deploy to Production
+        run: |
+          set -e
+          kubectl apply -f .github/workflows/k8s/production-frontend.yaml -n production
+          kubectl apply -f .github/workflows/k8s/production-backend.yaml -n production
+          kubectl rollout status deployment/bookingwiz-web -n production
+          kubectl rollout status deployment/bookingwiz-admin -n production
