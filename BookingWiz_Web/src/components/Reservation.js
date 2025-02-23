@@ -3,7 +3,7 @@ import './Reservation.css';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); 
     const [error, setError] = useState(null);
     const BASE_URL = process.env.REACT_APP_BASE_URL;
     const URL = `${BASE_URL}/reservation/list`;
